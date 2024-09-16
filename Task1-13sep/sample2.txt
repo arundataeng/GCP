@@ -1,0 +1,138 @@
+To set up and use the GOOGLE_APPLICATION_CREDENTIALS environment variable, you need to create a service account in Google Cloud, download its credentials (a JSON key file), and then point your environment to that file. Here's a step-by-step guide:
+
+1. Create a Service Account in Google Cloud
+
+i. Go to the Google Cloud Console: https://console.cloud.google.com/.
+ii. In the left-hand menu, click on IAM & Admin > Service Accounts.
+iii. At the top of the page, click + CREATE SERVICE ACCOUNT.
+iv. Fill in the Service account name, ID, and description. Then click CREATE AND CONTINUE.
+v. In the Grant this service account access to project section, assign roles based on what the account needs to do. For uploading and listing files in Google Cloud Storage, you'll need at least the Storage Admin role.
+Click DONE.
+
+
+2. Create and Download Service Account Key
+
+i. On the Service Accounts page, click on the service account you just created.
+ii. Click the Keys tab.
+iii. Click Add Key > Create New Key.
+iv. Choose the JSON option.
+v. Click Create. A .json file containing your service account credentials will be downloaded to your computer.
+
+
+3.For Windows:
+Open Command Prompt or PowerShell.
+
+Set the environment variable with the following command:
+
+set GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your-service-account-file.json"
+Replace C:\path\to\your-service-account-file.json with the actual path to the JSON key file.
+
+To set the variable permanently (so it's available in future sessions), you can add it to your System Environment Variables:
+
+Open the Start Menu and search for "Environment Variables".
+Click Edit the system environment variables.
+In the System Properties window, click Environment Variables.
+Under User variables or System variables, click New.
+Set the Variable name to GOOGLE_APPLICATION_CREDENTIALS and the Variable value to the full path of your JSON file.
+
+
+
+
+4. Verify Authentication
+After setting the environment variable, you can verify that the credentials are working by running a simple Python script that interacts with Google Cloud. For example, this code lists all buckets in your project:
+
+
+from google.cloud import storage
+# Initialize a Cloud Storage client
+client = storage.Client()
+# List all the buckets in the project
+buckets = client.list_buckets()
+print("Buckets in project:")
+for bucket in buckets:
+    print(bucket.name)
+
+
+
+
+5.Push the object file from local to GCP
+
+
+
+1. Install the Google Cloud Storage Client Library
+First, install the google-cloud-storage library if you don't have it yet:
+
+pip install google-cloud-storage
+
+
+2. Authenticate with Google Cloud
+
+Ensure that your environment is authenticated to use Google Cloud Storage, either by setting the GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of your service account JSON key file:
+
+import os
+
+# Set the environment variable in Python
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/path/to/your-service-account-file.json"
+
+# Now you can use the Google Cloud client libraries
+from google.cloud import storage
+
+client = storage.Client()
+buckets = client.list_buckets()
+
+for bucket in buckets:
+    print(bucket.name)
+
+
+3. Upload the File and List Items in the Bucket
+Here is a Python script that does the following:
+
+Uploads a text file to a specified bucket.
+Lists all objects in the bucket.
+
+
+from google.cloud import storage
+
+def upload_file_to_bucket(bucket_name, source_file_name, destination_blob_name):
+    # Initialize a client
+    storage_client = storage.Client()
+
+    # Get the bucket
+    bucket = storage_client.get_bucket(bucket_name)
+
+    # Create a blob and upload the file
+    blob = bucket.blob(destination_blob_name)
+    blob.upload_from_filename(source_file_name)
+
+    print(f"File {source_file_name} uploaded to {destination_blob_name}.")
+
+def list_files_in_bucket(bucket_name):
+    # Initialize a client
+    storage_client = storage.Client()
+
+    # Get the bucket
+    bucket = storage_client.get_bucket(bucket_name)
+
+    # List all objects in the bucket
+    blobs = bucket.list_blobs()
+
+    print("Files in bucket:")
+    for blob in blobs:
+        print(blob.name)
+
+# Usage
+bucket_name = "your-bucket-name"
+source_file_name = "path_to_your_local_file.txt"  # e.g., "sample.txt"
+destination_blob_name = "uploaded_file.txt"  # The name for the file in the bucket
+
+# Upload file
+upload_file_to_bucket(bucket_name, source_file_name, destination_blob_name)
+
+# List files
+list_files_in_bucket(bucket_name)
+Explanation:
+upload_file_to_bucket(): Uploads a file from the local environment to the specified bucket.
+bucket_name: The name of your Cloud Storage bucket.
+source_file_name: The path of the file you want to upload.
+destination_blob_name: The name the file will be stored under in the bucket.
+list_files_in_bucket(): Lists all the objects currently in the specified bucket.
+Make sure to replace "your-bucket-name" and the paths with your actual bucket name and file paths.
